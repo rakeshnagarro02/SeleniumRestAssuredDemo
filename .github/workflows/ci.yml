@@ -21,5 +21,11 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Run tests
-        run: mvn clean test -Pci
+      - name: Run tests and generate report
+        run: mvn clean verify -Pci
+
+      - name: Upload HTML report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-report
+          path: target/site/surefire-report.html
