@@ -41,12 +41,22 @@ mvn clean test -Plocal
 
 ### CI / headless browser mode
 ```bash
-mvn clean test -Pci
+mvn clean verify -Pci
 ```
 
 ### Dedicated TestNG suite
 ```bash
-mvn clean test -Ptestng
+mvn clean verify -Ptestng
+```
+
+### Generate HTML report
+After running `mvn clean verify`, the HTML test report is available at:
+
+`target/site/surefire-report.html`
+
+If you want only the report generation step after tests have already run, use:
+```bash
+mvn surefire-report:report
 ```
 
 ### Run inside Docker
