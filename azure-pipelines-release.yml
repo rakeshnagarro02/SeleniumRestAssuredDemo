@@ -64,6 +64,14 @@ stages:
             displayName: Publish code coverage
             condition: always()
 
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/target'
+              artifact: 'test-artifacts'
+              publishLocation: 'pipeline'
+            displayName: Publish test reports and output
+            condition: succeededOrFailed()
+
   - stage: PublishArtifacts
     displayName: Publish test artifacts
     dependsOn: BuildAndRunTests
@@ -71,6 +79,6 @@ stages:
     jobs:
       - job: Publish
         steps:
-          - publish: $(System.DefaultWorkingDirectory)/target
+          - download: current
             artifact: test-artifacts
-            displayName: Publish test reports and output
+            displayName: Download test artifacts
