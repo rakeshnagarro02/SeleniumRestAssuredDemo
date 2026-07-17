@@ -1,0 +1,8 @@
+#!/bin/bash
+# Check if required file exists
+if [ ! -f "src/test/resources/config.properties" ]; then
+    echo "Error: Required file 'src/test/resources/config.properties' not found."
+    echo "Push aborted."
+    exit 1
+fi
+exit 0
