@@ -1,0 +1,84 @@
+trigger: none
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+
+stages:
+  - stage: BuildAndRunTests
+    displayName: Build and run test suite
+    jobs:
+      - job: MavenTests
+        displayName: Maven test execution
+        steps:
+          - checkout: self
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+              path: '$(MAVEN_CACHE_FOLDER)'
+            displayName: Cache Maven dependencies
+
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+            displayName: Use Java 17
+
+          - script: |
+              sudo apt-get update
+              sudo apt-get install -y --no-install-recommends chromium chromium-driver
+              chromium --version || true
+            displayName: Install browser dependencies for Selenium
+
+          - task: Maven@4
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'clean verify -Pci'
+              options: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/*.xml'
+              codeCoverageToolOption: 'JaCoCo'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.17'
+              mavenVersionOption: 'Default'
+            displayName: Run Maven tests
+
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/surefire-reports/*.xml'
+              testRunTitle: 'Selenium REST Assured Demo'
+            condition: always()
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: 'target/site/jacoco/jacoco.xml'
+              pathToSources: 'src'
+            displayName: Publish code coverage
+            condition: always()
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/target'
+              artifact: 'test-artifacts'
+              publishLocation: 'pipeline'
+            displayName: Publish test reports and output
+            condition: succeededOrFailed()
+
+  - stage: PublishArtifacts
+    displayName: Publish test artifacts
+    dependsOn: BuildAndRunTests
+    condition: succeededOrFailed()
+    jobs:
+      - job: Publish
+        steps:
+          - download: current
+            artifact: test-artifacts
+            displayName: Download test artifacts
