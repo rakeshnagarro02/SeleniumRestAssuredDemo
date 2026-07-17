@@ -11,6 +11,7 @@ public class BaseTest {
     @BeforeEach
     void setUp() {
         driver = WebDriverFactory.initDriver();
+        //test
     }
 
     @AfterEach
