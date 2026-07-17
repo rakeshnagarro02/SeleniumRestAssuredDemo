@@ -1,0 +1,22 @@
+name: Check Required File
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  validate-file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for required file
+        run: |
+          if [ ! -f "src/test/resources/config.properties" ]; then
+            echo "Error: Required file not found!"
+            exit 1
+          fi
+          echo "Required file found ✓"
