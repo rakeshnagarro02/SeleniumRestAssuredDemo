@@ -1,13 +1,13 @@
 name: Check Required File
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-  push:
+push:
     branches:
       - main
       - develop
-
+  pull_request:
+    types: [opened, synchronize, reopened]
+  
 jobs:
   validate-file:
     runs-on: ubuntu-latest
